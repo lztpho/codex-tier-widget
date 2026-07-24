@@ -11,7 +11,7 @@ jobs:
     name: Link check (.md)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install markdown-link-check
         run: npm install -g markdown-link-check
       - name: Check links
