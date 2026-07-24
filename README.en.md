@@ -18,4 +18,4 @@ Requires Windows 10/11 and Python 3.11+.
 python scripts/launch_widget.py
 ```
 
-Edit `src/codex_tier_widget/config.py` to change the three display tiers or the IQ threshold. See the [Chinese README](README.md) for full documentation.
+Edit `src/codex_tier_widget/config.py` to change the IQ threshold or display count. See the [Chinese README](README.md) for full documentation.

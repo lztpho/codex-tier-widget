@@ -7,7 +7,7 @@ import tkinter as tk
 from typing import Callable
 
 from . import config, data
-from .color import format_iq, format_price, score_for
+from .color import format_iq, format_price, price_color_for, score_for
 
 
 ROW_HEIGHT = 26
@@ -52,18 +52,6 @@ class TierRow(tk.Frame):
             child.bind('<B1-Motion>', self._on_motion)
             child.bind('<ButtonRelease-1>', self._on_release)
 
-    @staticmethod
-    def _price_color(score: float | None) -> str:
-        if score is None:
-            return config.MUTED_FG
-        if score >= 30:
-            return config.PRICE_GOOD_FG
-        if score >= 20:
-            return config.PRICE_MID_FG
-        if score >= 10:
-            return config.PRICE_WARN_FG
-        return config.PRICE_BAD_FG
-
     def update(
         self,
         *,
@@ -77,12 +65,12 @@ class TierRow(tk.Frame):
             highlightbackground=config.ROW_BORDER,
             highlightcolor=config.ROW_BORDER,
         )
-        self._accent.configure(bg=self._price_color(score))
+        self._accent.configure(bg=price_color_for(score))
         self._model.configure(text=label, fg=config.TEXT_FG, bg=config.ROW_BG)
         self._iq.configure(text=f'IQ{format_iq(iq)}', fg=config.METRIC_FG, bg=config.ROW_BG)
         self._price.configure(
             text=format_price(price),
-            fg=self._price_color(score),
+            fg=price_color_for(score),
             bg=config.ROW_BG,
         )
 
@@ -174,7 +162,8 @@ class TierWidget:
         entries = [(point, score_for(point)) for point in data.all_points(self.snapshot)]
 
         entries.sort(key=self._rank_key)
-        for row, (point, score) in zip(self.rows, entries[:config.DISPLAY_LIMIT]):
+        visible_entries = entries[:config.DISPLAY_LIMIT]
+        for row, (point, score) in zip(self.rows, visible_entries):
             row.update(
                 label=self._short_label(point),
                 iq=point.get('iq'),
@@ -182,7 +171,7 @@ class TierWidget:
                 score=score,
             )
 
-        for row in self.rows[len(entries[:config.DISPLAY_LIMIT]):]:
+        for row in self.rows[len(visible_entries):]:
             row.update(label='—', iq=None, price=None, score=None)
 
     @staticmethod
@@ -194,6 +183,8 @@ class TierWidget:
                 model = model[len(prefix):]
         if model.startswith('gpt-'):
             model = model[4:]
+        if not model:
+            return '—'
 
         effort = point.get('effort', point.get('reasoning_effort'))
         if not isinstance(effort, str) or not effort.strip():
@@ -212,9 +203,8 @@ class TierWidget:
         if not isinstance(price, (int, float)) or price <= 0:
             price = float('inf')
 
-        if iq >= config.MINIMUM_IQ:
-            return (0.0, -score, float(price))
-        return (1.0, -score, float(price))
+        group = 0.0 if iq >= config.MINIMUM_IQ else 1.0
+        return (group, -score, float(price))
 
     def tick(self) -> None:
         if time.time() - self.last_refresh >= config.REFRESH_SECONDS:

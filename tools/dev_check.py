@@ -41,7 +41,7 @@ def smoke_import() -> int:
 def smoke_color() -> int:
     """验证显示格式和性价比分数的基本行为。"""
     sys.path.insert(0, str(SRC))
-    from codex_tier_widget.color import color_for, format_iq, format_price, score_for
+    from codex_tier_widget.color import format_iq, format_price, price_color_for, score_for
 
     assert score_for(None) is None
     assert score_for({'iq': 90, 'average_price_usd': 3.0}) == 30
@@ -49,7 +49,7 @@ def smoke_color() -> int:
     assert format_iq(89.7) == '89.7'
     assert format_price(None) == '—'
     assert format_price(1.63) == '$1.63'
-    assert color_for(30)[0].startswith('#')
+    assert price_color_for(30).startswith('#')
     print('数据格式检查通过')
     return 0
 

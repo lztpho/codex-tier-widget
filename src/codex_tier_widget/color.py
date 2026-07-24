@@ -1,4 +1,4 @@
-"""IQ 与费用的格式化及辅助颜色计算。"""
+"""性价比计算、显示格式和深色界面颜色。"""
 
 from __future__ import annotations
 
@@ -18,14 +18,17 @@ def score_for(point: dict | None) -> float | None:
     return iq / price
 
 
-def color_for(score: float | None) -> tuple[str, str]:
-    """按性价比返回前景色与背景色。"""
-    if score is None or score < 0:
-        return config.GRAY_FG, config.GRAY_BG
-    for threshold, foreground, background in config.COLOR_THRESHOLDS:
-        if score >= threshold:
-            return foreground, background
-    return config.COLOR_THRESHOLDS[-1][1], config.COLOR_THRESHOLDS[-1][2]
+def price_color_for(score: float | None) -> str:
+    """根据性价比分数返回深色界面中的文字颜色。"""
+    if score is None:
+        return config.MUTED_FG
+    if score >= 30:
+        return config.PRICE_GOOD_FG
+    if score >= 20:
+        return config.PRICE_MID_FG
+    if score >= 10:
+        return config.PRICE_WARN_FG
+    return config.PRICE_BAD_FG
 
 
 def format_iq(iq: float | None) -> str:

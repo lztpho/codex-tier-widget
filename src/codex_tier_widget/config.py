@@ -1,37 +1,21 @@
-"""悬浮窗的静态展示配置。"""
+"""悬浮窗的静态配置。"""
 
 from __future__ import annotations
 
 from pathlib import Path
 
 
-# 每次刷新会从全部公开数据中重新计算，只显示排名前三的档位。
+# 每次刷新从全部公开数据中重算，只显示排名前三的档位。
 DISPLAY_LIMIT = 3
 
-
-# 保留数据格式化和开发自检所需的性价比颜色阈值。
-COLOR_THRESHOLDS: list[tuple[float, str, str]] = [
-    (50, '#0e8c5b', '#d1f5ea'),
-    (30, '#1e8449', '#daf5e3'),
-    (20, '#82c272', '#e8f5d8'),
-    (10, '#f39c12', '#fde9d4'),
-    (5, '#e67e22', '#fce4cf'),
-    (0, '#c0392b', '#fadbd8'),
-]
-
-GRAY_FG = '#666666'
-GRAY_BG = '#e8e8e8'
-
-
+# 数据源与刷新策略。
 DATA_URL = 'https://codexradar.com/data/intelligence-efficiency.json'
 DATA_CACHE = Path.home() / '.codex_radar_cache.json'
 REFRESH_SECONDS = 600
 HTTP_TIMEOUT = 5.0
-# 排名门槛：达到该 IQ 后，再按 IQ ÷ 费用的性价比排序。
 MINIMUM_IQ = 80.0
 
-
-# 窗口尺寸和深色卡片配色。
+# 窗口尺寸与深色卡片配色。
 WINDOW_WIDTH = 190
 WINDOW_HEIGHT = 84
 WINDOW_ALPHA = 0.98
