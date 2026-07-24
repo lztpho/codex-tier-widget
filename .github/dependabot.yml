@@ -25,9 +25,3 @@ updates:
       prefix: "deps"
     labels:
       - "dependencies"
-
-# 忽略某些更新策略
-ignore:
-  # 周末不打扰
-  - days-before-response: 7
-    update-types: ["version-update:semver-major"]
