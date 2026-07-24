@@ -1,13 +1,13 @@
 # Codex Tier Display Widget
 
-A compact, frameless, always-on-top desktop widget for comparing three Codex model tiers by short model name, IQ, and USD cost.
+A compact, frameless, always-on-top desktop widget that ranks every public Codex model tier and shows the top three by short model name, IQ, and USD cost.
 
 ## Highlights
 
 - Shows only the model name, IQ, and cost.
 - Drag any row to move the widget; press Escape to close it.
 - Fetches public benchmark data on launch and every 10 minutes afterwards.
-- Uses an IQ 80 eligibility gate, then ranks eligible tiers by `IQ / cost`.
+- Recalculates every public model tier every 10 minutes, applies an IQ 80 eligibility gate, and ranks eligible tiers by `IQ / cost`.
 - Never reads or changes Codex configuration, switches models, or controls Codex.
 
 ## Run

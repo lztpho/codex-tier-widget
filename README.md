@@ -1,11 +1,11 @@
 # Codex 档位展示窗
 
-一个紧凑、无标题栏、始终置顶的桌面悬浮窗，用于对比三个 Codex 模型档位的模型名、IQ 与费用。
+一个紧凑、无标题栏、始终置顶的桌面悬浮窗。它会从 Codex 雷达全部公开模型档位中计算排名，只展示前三名的模型短名称、IQ 与费用。
 
 ```text
-5.6-luna-max    IQ85.7    $2.49
-5.6-sol-medium  IQ93.8    $3.69
-5.6-terra-max   IQ93.8    $4.65
+5.6-luna-xhigh   IQ84.4    $1.63
+5.6-terra-xhigh  IQ91.1    $2.35
+5.6-luna-max     IQ85.7    $2.52
 ```
 
 项目只展示公开跑测数据：不读取、不修改 Codex 配置，不切换模型，也不重启或控制 Codex。
@@ -15,6 +15,7 @@
 - 仅显示必要信息：模型短名称、IQ、美元费用。
 - 紧凑三行界面，可按住任意一行拖动；按 Escape 关闭。
 - 启动时拉取数据，之后每 10 分钟刷新一次；网络异常时使用本机缓存。
+- 每次刷新都对全部公开模型档位计算排序，只显示前三名。
 - IQ 达到 80 的模型按 `IQ ÷ 费用` 从高到低排序；IQ 未达标或无数据的模型靠后。
 - 仅使用 Python 标准库，无额外运行依赖。
 
@@ -39,21 +40,16 @@ python scripts/launch_widget.py
 
 这样不会因为费用低而优先推荐能力不足的模型，同时仍会在可用模型中优先展示性价比更高的选择。
 
-## 自定义三个显示档位
+## 自定义排名门槛
 
 编辑 [config.py](D:/codering_widget/src/codex_tier_widget/config.py)：
 
 ```python
-TIERS = [
-    {'label': '5.6-luna-max', 'model': 'gpt-5.6-luna', 'effort': 'max'},
-    {'label': '5.6-terra-max', 'model': 'gpt-5.6-terra', 'effort': 'max'},
-    {'label': '5.6-sol-medium', 'model': 'gpt-5.6-sol', 'effort': 'medium'},
-]
-
 MINIMUM_IQ = 80.0
+DISPLAY_LIMIT = 3
 ```
 
-`label` 只决定界面显示名称；`model` 和 `effort` 用来匹配公开数据。修改后重启悬浮窗即可。
+`MINIMUM_IQ` 决定能力门槛；`DISPLAY_LIMIT` 保持为 3，以维持紧凑三行界面。修改后重启悬浮窗即可。
 
 ## 数据与隐私
 

@@ -5,12 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 
-# 三个固定展示档位。effort 与界面名称保持一致，用于匹配公开数据。
-TIERS: list[dict[str, str]] = [
-    {'label': '5.6-luna-max', 'model': 'gpt-5.6-luna', 'effort': 'max'},
-    {'label': '5.6-terra-max', 'model': 'gpt-5.6-terra', 'effort': 'max'},
-    {'label': '5.6-sol-medium', 'model': 'gpt-5.6-sol', 'effort': 'medium'},
-]
+# 每次刷新会从全部公开数据中重新计算，只显示排名前三的档位。
+DISPLAY_LIMIT = 3
 
 
 # 保留数据格式化和开发自检所需的性价比颜色阈值。

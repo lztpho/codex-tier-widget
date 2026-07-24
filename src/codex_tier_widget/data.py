@@ -1,4 +1,4 @@
-"""公开跑测数据的读取、缓存与查找。"""
+"""公开跑测数据的读取、缓存与全量模型档位提取。"""
 
 from __future__ import annotations
 
@@ -10,36 +10,12 @@ from pathlib import Path
 from . import config
 
 
-def _normalize_model(value: object) -> str:
-    """统一数据源可能附带的供应商前缀。"""
-    if not isinstance(value, str):
-        return ''
-    model = value.strip().lower()
-    for prefix in ('openai.', 'openai/', 'azure.'):
-        if model.startswith(prefix):
-            return model[len(prefix):]
-    return model
-
-
-def _normalize_effort(value: object) -> str:
-    """统一数据源中不同的推理强度拼写。"""
-    if not isinstance(value, str):
-        return ''
-    effort = value.strip().lower().replace('_', '-').replace(' ', '-')
-    return {
-        'extra-high': 'xhigh',
-        'extra-highest': 'xhigh',
-        'very-high': 'xhigh',
-        'maximum': 'max',
-    }.get(effort, effort)
-
-
 def _http_get_json(url: str) -> dict:
     """获取并解析一个 JSON 对象。"""
     request = urllib.request.Request(
         url,
         headers={
-            'User-Agent': 'codex-tier-widget/0.1',
+            'User-Agent': 'codex-tier-widget/0.3',
             'Accept': 'application/json',
         },
     )
@@ -76,23 +52,11 @@ def fetch_snapshot(use_cache_on_error: bool = True) -> dict | None:
         return load_cache() if use_cache_on_error else None
 
 
-def find_point(snapshot: dict | None, model: str, effort: str) -> dict | None:
-    """按模型名与推理强度查找对应的公开跑测记录。"""
+def all_points(snapshot: dict | None) -> list[dict]:
+    """返回公开快照内全部有效的模型档位记录。"""
     if not isinstance(snapshot, dict):
-        return None
+        return []
     points = snapshot.get('points')
     if not isinstance(points, list):
-        return None
-
-    wanted_model = _normalize_model(model)
-    wanted_effort = _normalize_effort(effort)
-    for point in points:
-        if not isinstance(point, dict):
-            continue
-        actual_effort = point.get('effort', point.get('reasoning_effort'))
-        if (
-            _normalize_model(point.get('model')) == wanted_model
-            and _normalize_effort(actual_effort) == wanted_effort
-        ):
-            return point
-    return None
+        return []
+    return [point for point in points if isinstance(point, dict)]

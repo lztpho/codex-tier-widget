@@ -143,7 +143,7 @@ class TierWidget:
     def _build_ui(self) -> None:
         content = tk.Frame(self.root, bg=config.CARD_BG, bd=0)
         content.pack(fill='both', expand=True, padx=WINDOW_PADDING, pady=WINDOW_PADDING)
-        for _tier in config.TIERS:
+        for _ in range(config.DISPLAY_LIMIT):
             row = TierRow(
                 content,
                 on_drag_start=self._drag_start,
@@ -171,29 +171,39 @@ class TierWidget:
     def refresh_data(self) -> None:
         self.last_refresh = time.time()
         self.snapshot = data.fetch_snapshot()
-        entries: list[tuple[dict[str, str], dict | None, float | None]] = []
-        for tier in config.TIERS:
-            point = data.find_point(self.snapshot, tier['model'], tier['effort'])
-            entries.append((tier, point, score_for(point)))
+        entries = [(point, score_for(point)) for point in data.all_points(self.snapshot)]
 
         entries.sort(key=self._rank_key)
-        for row, (tier, point, score) in zip(self.rows, entries):
-            if point is None:
-                row.update(label=tier['label'], iq=None, price=None, score=None)
-                continue
+        for row, (point, score) in zip(self.rows, entries[:config.DISPLAY_LIMIT]):
             row.update(
-                label=tier['label'],
+                label=self._short_label(point),
                 iq=point.get('iq'),
                 price=point.get('average_price_usd'),
                 score=score,
             )
 
+        for row in self.rows[len(entries[:config.DISPLAY_LIMIT]):]:
+            row.update(label='—', iq=None, price=None, score=None)
+
     @staticmethod
-    def _rank_key(entry: tuple[dict[str, str], dict | None, float | None]) -> tuple[float, ...]:
+    def _short_label(point: dict) -> str:
+        """把数据源模型名转换成紧凑显示名称。"""
+        model = str(point.get('model') or '').strip().lower()
+        for prefix in ('openai.', 'openai/', 'azure.'):
+            if model.startswith(prefix):
+                model = model[len(prefix):]
+        if model.startswith('gpt-'):
+            model = model[4:]
+
+        effort = point.get('effort', point.get('reasoning_effort'))
+        if not isinstance(effort, str) or not effort.strip():
+            return model or '—'
+        return f'{model}-{effort.strip().lower().replace("_", "-")}'
+
+    @staticmethod
+    def _rank_key(entry: tuple[dict, float | None]) -> tuple[float, ...]:
         """先保证 IQ 达标，再比较 IQ 与费用的性价比。"""
-        _tier, point, score = entry
-        if not isinstance(point, dict):
-            return (2.0, float('inf'), 0.0)
+        point, score = entry
 
         iq = point.get('iq')
         price = point.get('average_price_usd')
