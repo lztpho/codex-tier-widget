@@ -1,65 +1,90 @@
 # Codex 档位展示窗
 
-一个紧凑、无标题栏、始终置顶的桌面悬浮窗。它会从 Codex 雷达全部公开模型档位中计算排名，只展示前三名的模型短名称、IQ 与费用。
+## 这个项目是做什么的？
 
-```text
-5.6-luna-xhigh   IQ84.4    $1.63
-5.6-terra-xhigh  IQ91.1    $2.35
-5.6-luna-max     IQ85.7    $2.52
-```
+使用 Codex 写代码时，模型名称、推理强度、IQ 和费用往往分散在不同页面里。模型越强通常越贵，而最便宜的模型又不一定能满足复杂任务；用户很难快速判断“当前任务应该用哪个档位”。
 
-项目只展示公开跑测数据：不读取、不修改 Codex 配置，不切换模型，也不重启或控制 Codex。
+本项目提供一个常驻桌面的紧凑悬浮窗，把 Codex 雷达公开跑测数据中的模型档位集中显示出来，并自动找出当前性价比最高的三个选择：
 
-## 特性
+- 模型短名称，例如 `5.6-terra-xhigh`；
+- IQ 智力评分；
+- 单次平均费用；
+- 基于 IQ 与费用的性价比排序。
 
-- 仅显示必要信息：模型短名称、IQ、美元费用。
-- 紧凑三行界面，可按住任意一行拖动；按 Escape 关闭。
-- 启动时拉取数据，之后每 10 分钟刷新一次；网络异常时使用本机缓存。
-- 每次刷新都对全部公开模型档位计算排序，只显示前三名。
-- IQ 达到 80 的模型按 `IQ ÷ 费用` 从高到低排序；IQ 未达标或无数据的模型靠后。
-- 仅使用 Python 标准库，无额外运行依赖。
+它解决的是“在满足最低智力要求的前提下，快速找到更划算模型”的问题，让用户不用反复打开网页、查表和手工计算。
+
+## 悬浮窗预览
+
+![Codex 档位展示窗截图](assets/widget-screenshot.png)
+
+预览中的数值来自公开数据示例，实际内容会随数据源刷新而变化。
+
+## 核心行为
+
+- 始终显示三个排名靠前的模型档位，只展示模型名、IQ 和费用。
+- 每次启动及之后每 10 分钟，遍历数据源全部模型档位并重新计算。
+- IQ 达到 80 的模型进入优先组，再按 `IQ ÷ 费用` 从高到低排序。
+- IQ 未达标或缺少有效数据的模型排在后面。
+- 网络暂时不可用时使用本机缓存。
+- 可按住任意一行拖动窗口，按 Escape 关闭窗口。
+
+## 它不会做什么？
+
+本项目是只读展示工具：
+
+- 不读取或修改 Codex 配置文件；
+- 不切换模型；
+- 不重启或控制 Codex；
+- 不上传代码、提示词或账户信息。
 
 ## 快速开始
 
-需要 Windows 10/11 与 Python 3.11 或更新版本。在项目根目录运行：
+需要 Windows 10/11 和 Python 3.11 或更新版本。在项目根目录运行：
 
 ```powershell
 python scripts/launch_widget.py
 ```
 
-窗口启动后出现在屏幕右下角。按住模型行拖动，按 Escape 关闭。
+窗口会出现在屏幕右下角。项目只使用 Python 标准库，无需安装额外依赖。
 
 ## 排名规则
 
-`MINIMUM_IQ = 80` 是能力门槛。
+排名采用“能力门槛 + 性价比”的两阶段规则：
 
-1. IQ 达到 80 的档位排在前面。
-2. 达标档位按 `IQ ÷ average_price_usd` 从高到低排序。
-3. IQ 未达标的档位排在后面，同样按性价比排序。
-4. 数据缺失的档位始终排在最后。
+1. IQ ≥ 80 的档位优先；
+2. 优先组按 `score = IQ / average_price_usd` 从高到低排序；
+3. IQ 未达标的档位排在后面，再按性价比排序；
+4. 缺少 IQ 或费用的档位固定排在最后。
 
-这样不会因为费用低而优先推荐能力不足的模型，同时仍会在可用模型中优先展示性价比更高的选择。
+因此，程序不会因为某个模型价格低就直接推荐它，也不会只追求最高 IQ 而忽略费用。
 
-## 自定义排名门槛
+## 配置
 
-编辑 [config.py](D:/codering_widget/src/codex_tier_widget/config.py)：
+在 [config.py](src/codex_tier_widget/config.py) 中可以调整：
 
 ```python
 MINIMUM_IQ = 80.0
 DISPLAY_LIMIT = 3
 ```
 
-`MINIMUM_IQ` 决定能力门槛；`DISPLAY_LIMIT` 保持为 3，以维持紧凑三行界面。修改后重启悬浮窗即可。
+`DISPLAY_LIMIT` 建议保持为 3，以维持悬浮窗的紧凑尺寸。修改后重新启动悬浮窗即可。
 
 ## 数据与隐私
 
-数据来自 [Codex 雷达](https://codexradar.com/) 的公开智力效率数据。程序只会在本机写入数据缓存 `~/.codex_radar_cache.json`，不会访问 `~/.codex/config.toml`，也不会上传代码、提示词或账户信息。
+数据来自 [Codex 雷达](https://codexradar.com/) 的公开智力效率数据。程序只会在本机写入 `~/.codex_radar_cache.json` 作为离线缓存，不会访问 `~/.codex/config.toml`。
 
-## 开发校验
+## 开发与校验
 
 ```powershell
 python tools/dev_check.py all
 python tools/release_check.py
 ```
 
-更多内容见 [安装指南](D:/codering_widget/INSTALL.md)、[使用说明](D:/codering_widget/USAGE.md)、[架构说明](D:/codering_widget/docs/ARCHITECTURE.md)、[常见问题](D:/codering_widget/docs/FAQ.md) 与 [贡献指南](D:/codering_widget/CONTRIBUTING.md)。
+更多内容：
+
+- [安装指南](INSTALL.md)
+- [使用说明](USAGE.md)
+- [架构说明](docs/ARCHITECTURE.md)
+- [常见问题](docs/FAQ.md)
+- [贡献指南](CONTRIBUTING.md)
+- [更新日志](CHANGELOG.md)

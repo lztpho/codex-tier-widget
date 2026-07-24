@@ -1,21 +1,35 @@
 # Codex Tier Display Widget
 
-A compact, frameless, always-on-top desktop widget that ranks every public Codex model tier and shows the top three by short model name, IQ, and USD cost.
+## Why does this project exist?
 
-## Highlights
+When using Codex for coding, model names, reasoning efforts, IQ scores, and prices are not always easy to compare in one place. Stronger models are usually more expensive, while the cheapest option may not be capable enough for a difficult task.
 
-- Shows only the model name, IQ, and cost.
-- Drag any row to move the widget; press Escape to close it.
-- Fetches public benchmark data on launch and every 10 minutes afterwards.
-- Recalculates every public model tier every 10 minutes, applies an IQ 80 eligibility gate, and ranks eligible tiers by `IQ / cost`.
-- Never reads or changes Codex configuration, switches models, or controls Codex.
+This project provides a small desktop widget that reads public benchmark data from Codex Radar and surfaces the three most cost-effective model tiers that meet the minimum IQ requirement. It solves a simple problem: quickly finding a capable and affordable model without repeatedly opening a web page or calculating the trade-off by hand.
+
+## Preview
+
+![Codex tier widget screenshot](assets/widget-screenshot.png)
+
+The values in the preview are example public data; the widget refreshes its values from the data source.
+
+## What it does
+
+- Shows only a short model name, IQ, and average cost.
+- Recalculates every public model tier on launch and every 10 minutes.
+- Prioritizes IQ ≥ 80, then ranks by `IQ / average_price_usd`.
+- Shows the top three results and uses local cache data when the network is unavailable.
+- Lets you drag any row; press Escape to close the widget.
+
+## What it does not do
+
+The widget is read-only. It never reads or modifies Codex configuration, switches models, restarts Codex, or uploads code and prompts.
 
 ## Run
 
-Requires Windows 10/11 and Python 3.11+.
+Requires Windows 10/11 and Python 3.11+:
 
 ```powershell
 python scripts/launch_widget.py
 ```
 
-Edit `src/codex_tier_widget/config.py` to change the IQ threshold or display count. See the [Chinese README](README.md) for full documentation.
+See the [Chinese README](README.md) for the full documentation.
