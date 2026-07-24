@@ -1,0 +1,11 @@
+# Codex Tier Widget — 0 运行时依赖
+# 全部使用 Python 3.11+ 标准库（tkinter / urllib / tomllib / json / re / pathlib）
+# 部署到新电脑只需要 Python 3.11+ 自带环境，无需 pip install 任何包
+#
+# 如果运行时报 Python 版本太低（< 3.11），请安装 3.11 或以上版本：
+#   https://www.python.org/downloads/
+#
+# 开发依赖（可选，CI / 本地 lint 用）：
+#   pip install -e ".[dev]"   # 安装 ruff / pyflakes
+#   或
+#   pip install ruff pyflakes

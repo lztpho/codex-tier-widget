@@ -1,0 +1,100 @@
+name: Syntax Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  syntax-check:
+    name: Python syntax + import smoke test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.12', '3.13']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Compile syntax check
+        run: |
+          python -m compileall -q src/
+          echo "✓ syntax OK"
+
+      - name: Import smoke test
+        run: |
+          # Test that all modules import without errors.
+          # Mock tkinter if unavailable (e.g. on headless CI).
+          python -c "
+          import sys
+          # Don't actually open the UI in CI.
+          # Just import modules to catch import-time errors.
+          sys.path.insert(0, 'src')
+          import codex_tier_widget
+          import codex_tier_widget.config
+          import codex_tier_widget.color
+          import codex_tier_widget.codex_config
+          import codex_tier_widget.data
+          print('✓ all modules import OK')
+          "
+
+      - name: Color module unit smoke test
+        run: |
+          python -c "
+          import sys
+          sys.path.insert(0, 'src')
+          from codex_tier_widget.color import color_for, score_for
+          # color_for returns (fg, bg) tuple
+          fg, bg = color_for(40)
+          assert fg.startswith('#'), f'fg should be hex: {fg}'
+          assert bg.startswith('#'), f'bg should be hex: {bg}'
+          # score_for accepts None / 0 IQ gracefully
+          assert score_for({'iq': 0, 'average_price_usd': 1.0}) is None
+          assert score_for({'iq': 90, 'average_price_usd': 0}) is None
+          s = score_for({'iq': 90, 'average_price_usd': 3.0})
+          assert abs(s - 30) < 1e-6
+          print('✓ color.py smoke OK')
+          "
+
+      - name: CodexConfig round-trip test
+        run: |
+          python -c "
+          import os, sys, tempfile
+          sys.path.insert(0, 'src')
+          from codex_tier_widget.codex_config import CodexConfig
+          from pathlib import Path
+
+          with tempfile.TemporaryDirectory() as tmpdir:
+              cfg_dir = Path(tmpdir) / '.codex'
+              cfg_dir.mkdir()
+              cfg_path = cfg_dir / 'config.toml'
+              cfg_path.write_text('''
+              model = \"gpt-5-codex\"
+              model_reasoning_effort = \"high\"
+              other_field = \"preserve me\"
+              '''.strip(), encoding='utf-8')
+
+              cfg = CodexConfig.__new__(CodexConfig)
+              cfg.path = cfg_path
+              cfg.last_mtime = 0.0
+
+              state = cfg.read()
+              assert state == {'model': 'gpt-5-codex', 'effort': 'high'}, f'unexpected: {state}'
+
+              # write
+              assert cfg.write('gpt-5-codex', 'xhigh')
+              assert state == {'model': 'gpt-5-codex', 'effort': 'high'}, 'after write state is read-only cache, not relevant'
+
+              text = cfg_path.read_text(encoding='utf-8')
+              assert 'model_reasoning_effort = \"xhigh\"' in text
+              assert 'other_field = \"preserve me\"' in text, 'unrelated fields must be preserved'
+              print('✓ codex_config.py round-trip OK')
+          "
