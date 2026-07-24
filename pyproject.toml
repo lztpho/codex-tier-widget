@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name        = "codering-tier-widget"
-version     = "0.1.0"
-description = "桌面悬浮窗显示 Codex 档位 IQ / 价格 + 配色 + Codex 联动切换"
+name        = "codex-tier-widget"
+version     = "0.2.0"
+description = "紧凑桌面悬浮窗：展示三档模型的 IQ、费用与性价比排序"
 readme      = "README.md"
 license     = { text = "MIT" }
 authors     = [

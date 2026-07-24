@@ -1,112 +1,69 @@
-# Codex Tier Widget
+# Codex 档位展示窗
 
-> 一个常驻 Windows 桌面右下角的悬浮窗，实时显示 Codex 三档推荐的 IQ + 价格 + 性价比染色，按按钮直接切换 Codex 当前档位。
+一个紧凑、无标题栏、始终置顶的桌面悬浮窗，用于对比三个 Codex 模型档位的模型名、IQ 与费用。
 
-[English README →](README.en.md)
-
-## 这是什么
-
-如果你用 OpenAI Codex 写代码，每次都要纠结「这次任务该用哪个模型档位」——这个工具就是为这个场景做的：
-
-- **常驻桌面**：右下角浮动小窗，frameless + 半透 + always-on-top，不抢屏幕
-- **实时数据**：每 10 分钟拉一次 [codexradar.com](https://codexradar.com/) 的 IQ 跑测数据，自动分析
-- **一档对一档**：3 个推荐档位（普通 / 中等 / 高级）按「IQ / 价格」性价比已挑选好
-- **真联动**：按按钮 → 直接改写 `~/.codex/config.toml`，Codex 重启生效
-- **配色**：性价比越高越绿，越差越红——一眼看出来有没有选错档
-- **0 外部依赖**：纯 Python 3.11+ 标准库，整个项目 < 30KB
-
-## 截图占位
-
-```
-┌──────────────────────────────────┐
-│ Codex 档位 · 21:34   ●实时连动    │ ← 状态行
-│ ──────────────────────────────── │
-│ 🟢 普通档                       │
-│   luna xhigh        IQ 84.4      │
-│   $1.63 / 次      [ 使用此档 ]   │
-│ ──────────────────────────────── │
-│ 🟡 中等档                       │
-│   terra xhigh       IQ 89.7      │
-│   $2.36 / 次      [ 使用此档 ]   │
-│ ──────────────────────────────── │
-│ 🟠 高级档                       │
-│   sol medium        IQ 93.8      │
-│   $3.69 / 次      [ 使用此档 ]   │
-│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ │
-│ ⚙️ 当前档  (你正在用 Codex)        │
-│   gpt-5-codex high  IQ 87.1      │
-│   $5.87 / 次                     │
-│ ──────────────────────────────── │
-│ ↻ 刷新 · 选中: ●普通档            │
-└──────────────────────────────────┘
+```text
+5.6-luna-max    IQ85.7    $2.49
+5.6-sol-medium  IQ93.8    $3.69
+5.6-terra-max   IQ93.8    $4.65
 ```
 
-> 真实运行截图见 [`assets/screenshot.png`](assets/screenshot.png)（首次发布时附）
+项目只展示公开跑测数据：不读取、不修改 Codex 配置，不切换模型，也不重启或控制 Codex。
 
-## 5 分钟上手
+## 特性
 
-### 1. 准备 Python
+- 仅显示必要信息：模型短名称、IQ、美元费用。
+- 紧凑三行界面，可按住任意一行拖动；按 Escape 关闭。
+- 启动时拉取数据，之后每 10 分钟刷新一次；网络异常时使用本机缓存。
+- IQ 达到 80 的模型按 `IQ ÷ 费用` 从高到低排序；IQ 未达标或无数据的模型靠后。
+- 仅使用 Python 标准库，无额外运行依赖。
 
-需要 **Python 3.11 或更新版本**（用到 `tomllib`）：
+## 快速开始
 
-- Windows: 从 [python.org](https://www.python.org/downloads/) 下载安装，勾选「Add to PATH」
-- 验证：`python --version` 应返回 `Python 3.11.x`
+需要 Windows 10/11 与 Python 3.11 或更新版本。在项目根目录运行：
 
-### 2. 拉取项目
-
-```bash
-git clone https://github.com/<your-name>/codering_widget.git
-cd codering_widget
+```powershell
+python scripts/launch_widget.py
 ```
 
-> 也可以直接下载 ZIP 解压到 `D:\codering_widget\`
+窗口启动后出现在屏幕右下角。按住模型行拖动，按 Escape 关闭。
 
-### 3. 启动
+## 排名规则
 
-```bash
-python -m codex_tier_widget
+`MINIMUM_IQ = 80` 是能力门槛。
+
+1. IQ 达到 80 的档位排在前面。
+2. 达标档位按 `IQ ÷ average_price_usd` 从高到低排序。
+3. IQ 未达标的档位排在后面，同样按性价比排序。
+4. 数据缺失的档位始终排在最后。
+
+这样不会因为费用低而优先推荐能力不足的模型，同时仍会在可用模型中优先展示性价比更高的选择。
+
+## 自定义三个显示档位
+
+编辑 [config.py](D:/codering_widget/src/codex_tier_widget/config.py)：
+
+```python
+TIERS = [
+    {'label': '5.6-luna-max', 'model': 'gpt-5.6-luna', 'effort': 'max'},
+    {'label': '5.6-terra-max', 'model': 'gpt-5.6-terra', 'effort': 'max'},
+    {'label': '5.6-sol-medium', 'model': 'gpt-5.6-sol', 'effort': 'medium'},
+]
+
+MINIMUM_IQ = 80.0
 ```
 
-或者：
+`label` 只决定界面显示名称；`model` 和 `effort` 用来匹配公开数据。修改后重启悬浮窗即可。
 
-```bash
-python src/codex_tier_widget/widget.py
+## 数据与隐私
+
+数据来自 [Codex 雷达](https://codexradar.com/) 的公开智力效率数据。程序只会在本机写入数据缓存 `~/.codex_radar_cache.json`，不会访问 `~/.codex/config.toml`，也不会上传代码、提示词或账户信息。
+
+## 开发校验
+
+```powershell
+python tools/dev_check.py all
+python tools/release_check.py
 ```
 
-启动后桌面右下角会立即弹出 320×230 的半透悬浮窗。
-
-### 4. 用法
-
-| 动作 | 效果 |
-|---|---|
-| 按住顶部拖动 | 移动窗口 |
-| 点「使用此档」按钮 | 写入 `~/.codex/config.toml`，需要重启 Codex 生效 |
-| 点「↻ 刷新」 | 立即拉一次 codexradar 新数据 |
-| 关闭（任务栏右键退出） | 退出程序 |
-
-## 文档索引
-
-| 想了解 | 看哪里 |
-|---|---|
-| 怎么装、怎么跑 | [INSTALL.md](INSTALL.md) |
-| 详细使用说明、快捷键、所有参数 | [USAGE.md](USAGE.md) |
-| 三档推荐是怎么挑出来的？染色算法？ | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
-| 常见问题 | [docs/FAQ.md](docs/FAQ.md) |
-| 想贡献代码 | [CONTRIBUTING.md](CONTRIBUTING.md) |
-| 版本变化 | [CHANGELOG.md](CHANGELELOG.md) |
-
-## 系统要求
-
-- **OS**: Windows 10 / 11（macOS / Linux 理论上能用，平台特性没测）
-- **Python**: 3.11+
-- **网络**: 需要访问 codexradar.com（首次拉数据时）
-- **磁盘**: < 1MB
-- **内存**: < 50MB 运行
-
-## 开源 License
-
-[MIT](LICENSE) — 随便用、改、商用，只需要保留版权声明。
-
-## 贡献
-
-欢迎 PR / Issue！详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+更多内容见 [安装指南](D:/codering_widget/INSTALL.md)、[使用说明](D:/codering_widget/USAGE.md)、[架构说明](D:/codering_widget/docs/ARCHITECTURE.md)、[常见问题](D:/codering_widget/docs/FAQ.md) 与 [贡献指南](D:/codering_widget/CONTRIBUTING.md)。
