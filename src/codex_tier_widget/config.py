@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-
 # 每次刷新从全部公开数据中重算，只显示排名前三的档位。
 DISPLAY_LIMIT = 3
 

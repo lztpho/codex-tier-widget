@@ -20,7 +20,13 @@ cd D:\codering_widget
 python scripts/launch_widget.py
 ```
 
-无需安装额外依赖。启动后窗口显示在右下角；按住任意模型行拖动，按 Escape 关闭。
+首次运行前安装托盘依赖：
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+启动后窗口显示在右下角，同时右下角通知区域会出现托盘图标。按住任意模型行拖动，按 `Escape` 只隐藏窗口；右键托盘图标可以重新显示、立即刷新或退出程序。
 
 ## 创建快捷启动文件
 
@@ -34,7 +40,7 @@ python scripts\launch_widget.py
 
 ## 卸载
 
-关闭悬浮窗后删除项目目录即可。若不再需要本地数据缓存，也可以删除：
+从托盘菜单选择“退出程序”后，再删除项目目录即可。若不再需要本地数据缓存，也可以删除：
 
 ```text
 %USERPROFILE%\.codex_radar_cache.json

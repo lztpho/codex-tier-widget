@@ -24,6 +24,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Install runtime dependencies
+        run: python -m pip install -r requirements.txt
+
       - name: Compile syntax check
         run: |
           python -m compileall -q src/
@@ -41,8 +44,8 @@ jobs:
           import codex_tier_widget
           import codex_tier_widget.config
           import codex_tier_widget.color
-          import codex_tier_widget.codex_config
           import codex_tier_widget.data
+          import codex_tier_widget.tray
           print('✓ all modules import OK')
           "
 
@@ -51,50 +54,13 @@ jobs:
           python -c "
           import sys
           sys.path.insert(0, 'src')
-          from codex_tier_widget.color import color_for, score_for
-          # color_for returns (fg, bg) tuple
-          fg, bg = color_for(40)
-          assert fg.startswith('#'), f'fg should be hex: {fg}'
-          assert bg.startswith('#'), f'bg should be hex: {bg}'
+          from codex_tier_widget.color import price_color_for, score_for
+          color = price_color_for(40)
+          assert color.startswith('#'), f'color should be hex: {color}'
           # score_for accepts None / 0 IQ gracefully
           assert score_for({'iq': 0, 'average_price_usd': 1.0}) is None
           assert score_for({'iq': 90, 'average_price_usd': 0}) is None
           s = score_for({'iq': 90, 'average_price_usd': 3.0})
           assert abs(s - 30) < 1e-6
           print('✓ color.py smoke OK')
-          "
-
-      - name: CodexConfig round-trip test
-        run: |
-          python -c "
-          import os, sys, tempfile
-          sys.path.insert(0, 'src')
-          from codex_tier_widget.codex_config import CodexConfig
-          from pathlib import Path
-
-          with tempfile.TemporaryDirectory() as tmpdir:
-              cfg_dir = Path(tmpdir) / '.codex'
-              cfg_dir.mkdir()
-              cfg_path = cfg_dir / 'config.toml'
-              cfg_path.write_text('''
-              model = \"gpt-5-codex\"
-              model_reasoning_effort = \"high\"
-              other_field = \"preserve me\"
-              '''.strip(), encoding='utf-8')
-
-              cfg = CodexConfig.__new__(CodexConfig)
-              cfg.path = cfg_path
-              cfg.last_mtime = 0.0
-
-              state = cfg.read()
-              assert state == {'model': 'gpt-5-codex', 'effort': 'high'}, f'unexpected: {state}'
-
-              # write
-              assert cfg.write('gpt-5-codex', 'xhigh')
-              assert state == {'model': 'gpt-5-codex', 'effort': 'high'}, 'after write state is read-only cache, not relevant'
-
-              text = cfg_path.read_text(encoding='utf-8')
-              assert 'model_reasoning_effort = \"xhigh\"' in text
-              assert 'other_field = \"preserve me\"' in text, 'unrelated fields must be preserved'
-              print('✓ codex_config.py round-trip OK')
           "

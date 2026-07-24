@@ -33,8 +33,10 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 
-# 0 运行时依赖 —— 关键卖点
-dependencies = []
+dependencies = [
+    "pystray>=0.19.5",
+    "Pillow>=10.0",
+]
 
 [project.optional-dependencies]
 dev = [
@@ -43,10 +45,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage      = "https://github.com/<your-name>/codering_widget"
-Repository    = "https://github.com/<your-name>/codering_widget"
-Issues        = "https://github.com/<your-name>/codering_widget/issues"
-Changelog     = "https://github.com/<your-name>/codering_widget/blob/main/CHANGELOG.md"
+Homepage      = "https://github.com/lztpho/codex-tier-widget"
+Repository    = "https://github.com/lztpho/codex-tier-widget"
+Issues        = "https://github.com/lztpho/codex-tier-widget/issues"
+Changelog     = "https://github.com/lztpho/codex-tier-widget/blob/main/CHANGELOG.md"
 
 [project.scripts]
 # 安装后可直接 `codex-widget` 启动（可选用）

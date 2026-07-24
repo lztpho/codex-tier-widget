@@ -15,7 +15,7 @@ assignees: ''
 - [ ] 读过 [README.md](../../README.md)
 - [ ] 读过 [USAGE.md](../../USAGE.md)
 - [ ] 读过 [docs/FAQ.md](../../docs/FAQ.md)
-- [ ] 搜过 [Issues](https://github.com/<your-name>/codering_widget/issues?q=is%3Aissue)
+- [ ] 搜过 [Issues](https://github.com/lztpho/codex-tier-widget/issues?q=is%3Aissue)
 
 ## 环境 (Environment)
 

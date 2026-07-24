@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import time
 import tkinter as tk
-from typing import Callable
+from collections.abc import Callable
+from queue import Empty, Queue
 
 from . import config, data
 from .color import format_iq, format_price, price_color_for, score_for
-
+from .tray import EXIT, HIDE, REFRESH, SHOW, TrayController
 
 ROW_HEIGHT = 26
 WINDOW_PADDING = 3
@@ -105,11 +106,21 @@ class TierWidget:
         self.last_refresh = 0.0
         self._drag_offset_x = 0
         self._drag_offset_y = 0
+        self._closed = False
+        self._tray_commands: Queue[str] = Queue()
+        self.tray = TrayController(self._tray_commands.put)
 
         self._configure_window()
         self.rows: list[TierRow] = []
         self._build_ui()
         self.refresh_data()
+        if not self.tray.start():
+            error = self.tray.error
+            detail = f'（{error}）' if error else ''
+            raise RuntimeError(
+                f'无法启动系统托盘。请先运行“python -m pip install -r requirements.txt”{detail}'
+            )
+        self._poll_tray_commands()
         self.tick()
 
     def _configure_window(self) -> None:
@@ -119,7 +130,8 @@ class TierWidget:
         self.root.attributes('-topmost', True)
         self.root.attributes('-alpha', config.WINDOW_ALPHA)
         self.root.resizable(False, False)
-        self.root.bind('<Escape>', lambda _event: self.root.destroy())
+        self.root.bind('<Escape>', lambda _event: self.hide_window())
+        self.root.protocol('WM_DELETE_WINDOW', self.hide_window)
         self.root.update_idletasks()
 
         screen_width = self.root.winfo_screenwidth()
@@ -162,8 +174,8 @@ class TierWidget:
         entries = [(point, score_for(point)) for point in data.all_points(self.snapshot)]
 
         entries.sort(key=self._rank_key)
-        visible_entries = entries[:config.DISPLAY_LIMIT]
-        for row, (point, score) in zip(self.rows, visible_entries):
+        visible_entries = entries[: config.DISPLAY_LIMIT]
+        for row, (point, score) in zip(self.rows, visible_entries, strict=False):
             row.update(
                 label=self._short_label(point),
                 iq=point.get('iq'),
@@ -171,7 +183,7 @@ class TierWidget:
                 score=score,
             )
 
-        for row in self.rows[len(visible_entries):]:
+        for row in self.rows[len(visible_entries) :]:
             row.update(label='—', iq=None, price=None, score=None)
 
     @staticmethod
@@ -179,10 +191,8 @@ class TierWidget:
         """把数据源模型名转换成紧凑显示名称。"""
         model = str(point.get('model') or '').strip().lower()
         for prefix in ('openai.', 'openai/', 'azure.'):
-            if model.startswith(prefix):
-                model = model[len(prefix):]
-        if model.startswith('gpt-'):
-            model = model[4:]
+            model = model.removeprefix(prefix)
+        model = model.removeprefix('gpt-')
         if not model:
             return '—'
 
@@ -211,13 +221,66 @@ class TierWidget:
             self.refresh_data()
         self.root.after(60_000, self.tick)
 
+    def _poll_tray_commands(self) -> None:
+        while True:
+            try:
+                command = self._tray_commands.get_nowait()
+            except Empty:
+                break
+
+            if command == SHOW:
+                self.show_window()
+            elif command == HIDE:
+                self.hide_window()
+            elif command == REFRESH:
+                self.refresh_data()
+            elif command == EXIT:
+                self.close()
+
+        if not self._closed:
+            self.root.after(100, self._poll_tray_commands)
+
+    def show_window(self) -> None:
+        """显示并激活悬浮窗。"""
+        if self._closed:
+            return
+        self.root.deiconify()
+        self.root.lift()
+        self.root.attributes('-topmost', True)
+
+    def hide_window(self) -> None:
+        """隐藏悬浮窗，但保持程序与托盘图标运行。"""
+        if not self._closed:
+            self.root.withdraw()
+
+    def close(self) -> None:
+        """从托盘退出程序，并清理托盘图标。"""
+        if self._closed:
+            return
+        self._closed = True
+        self.tray.stop()
+        try:
+            self.root.destroy()
+        except tk.TclError:
+            pass
+
     def mainloop(self) -> None:
         self.root.mainloop()
 
 
 def main() -> int:
-    widget = TierWidget()
-    widget.mainloop()
+    widget: TierWidget | None = None
+    try:
+        widget = TierWidget()
+        widget.mainloop()
+    except RuntimeError as exc:
+        print(f'启动失败：{exc}')
+        return 1
+    except KeyboardInterrupt:
+        return 0
+    finally:
+        if widget is not None:
+            widget.close()
     return 0
 
 

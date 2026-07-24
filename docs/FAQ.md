@@ -22,8 +22,18 @@
 
 ## 如何调整 IQ 门槛或显示数量？
 
-编辑 [config.py](D:/codering_widget/src/codex_tier_widget/config.py) 的 `MINIMUM_IQ` 或 `DISPLAY_LIMIT`，然后重启悬浮窗。
+编辑 [config.py](../src/codex_tier_widget/config.py) 的 `MINIMUM_IQ` 或 `DISPLAY_LIMIT`，然后重启悬浮窗。
 
-## 如何关闭悬浮窗？
+## 如何隐藏或退出程序？
 
-将窗口置于前台后按 Escape，或在任务管理器中结束对应的 Python 进程。
+按 `Escape` 或在托盘菜单选择“隐藏悬浮窗”，只会隐藏窗口，程序仍会继续刷新数据。要完全退出，请右键右下角托盘图标，选择“退出程序”。
+
+## 为什么看不到托盘图标？
+
+请先安装运行依赖：
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+如果 Windows 将图标收进了通知区域的“显示隐藏图标”菜单，请在那里查找 Codex 档位图标。

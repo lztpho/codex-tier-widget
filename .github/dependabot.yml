@@ -1,7 +1,7 @@
 version: 2
 
 # Dependabot 自动更新 GitHub Actions 和 Python 依赖的版本。
-# 当前项目 0 外部 Python 依赖，仅跟踪 GitHub Actions。
+# 跟踪 GitHub Actions 与运行时 Python 依赖。
 
 updates:
   # GitHub Actions 自身版本
@@ -15,7 +15,7 @@ updates:
     labels:
       - "dependencies"
 
-  # Python 依赖（未来如果引入 dev deps）
+  # Python 依赖
   - package-ecosystem: "pip"
     directory: "/"
     schedule:

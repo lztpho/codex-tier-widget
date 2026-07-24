@@ -18,7 +18,7 @@ The values in the preview are example public data; the widget refreshes its valu
 - Recalculates every public model tier on launch and every 10 minutes.
 - Prioritizes IQ ≥ 80, then ranks by `IQ / average_price_usd`.
 - Shows the top three results and uses local cache data when the network is unavailable.
-- Lets you drag any row; press Escape to close the widget.
+- Lets you drag any row; press Escape to hide the widget. Use the system tray menu to show, hide, refresh, or exit.
 
 ## What it does not do
 
@@ -29,7 +29,10 @@ The widget is read-only. It never reads or modifies Codex configuration, switche
 Requires Windows 10/11 and Python 3.11+:
 
 ```powershell
+python -m pip install -r requirements.txt
 python scripts/launch_widget.py
 ```
+
+Closing or pressing Escape hides the widget but keeps the process running. Use the system tray menu to exit completely.
 
 See the [Chinese README](README.md) for the full documentation.

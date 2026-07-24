@@ -1,12 +1,13 @@
 # 贡献指南
 
-欢迎提交问题、建议和改进。请保持项目的核心边界：紧凑三行展示、零额外运行依赖、不读取或控制 Codex。
+欢迎提交问题、建议和改进。请保持项目的核心边界：紧凑三行展示、轻量运行依赖、不读取或控制 Codex。
 
 ## 本地开发
 
 ```powershell
-git clone https://github.com/<your-name>/codering_widget.git
-cd codering_widget
+git clone https://github.com/lztpho/codex-tier-widget.git
+cd codex-tier-widget
+python -m pip install -r requirements.txt
 python scripts/launch_widget.py
 ```
 
@@ -21,7 +22,8 @@ python tools/release_check.py
 
 ```text
 src/codex_tier_widget/
-├── widget.py       界面、拖动、刷新与排序
+├── widget.py       界面、拖动、刷新、排序与生命周期
+├── tray.py         系统托盘图标和退出菜单
 ├── data.py         公开数据和本机缓存
 ├── color.py        性价比计算与显示格式
 ├── config.py       档位、IQ 门槛、数据和界面配置
@@ -36,7 +38,7 @@ tools/
 
 ## 代码约定
 
-- Python 3.11+，仅使用标准库。
+- Python 3.11+；运行时使用 `pystray` 和 `Pillow` 提供系统托盘图标。
 - 使用类型注解与中文文档字符串。
 - 新功能不得引入 Codex 配置读写、模型切换或进程控制。
 - 修改排序、数据解析或窗口尺寸后，应补充对应的运行验证。
