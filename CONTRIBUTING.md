@@ -16,6 +16,7 @@ python scripts/launch_widget.py
 ```powershell
 python tools/dev_check.py all
 python tools/release_check.py
+powershell -ExecutionPolicy Bypass -File scripts/build_windows_exe.ps1
 ```
 
 ## 项目结构
@@ -24,13 +25,15 @@ python tools/release_check.py
 src/codex_tier_widget/
 ├── widget.py       界面、拖动、刷新、排序与生命周期
 ├── tray.py         系统托盘图标和退出菜单
+├── autostart.py    Windows 当前用户开机自启
 ├── data.py         公开数据和本机缓存
 ├── color.py        性价比计算与显示格式
 ├── config.py       档位、IQ 门槛、数据和界面配置
 ├── __init__.py     包元数据
 └── __main__.py     模块启动入口
 scripts/
-└── launch_widget.py  本地源码启动脚本
+├── launch_widget.py       本地源码启动脚本
+└── build_windows_exe.ps1  Windows EXE 构建脚本
 tools/
 ├── dev_check.py      开发检查
 └── release_check.py  发布前检查

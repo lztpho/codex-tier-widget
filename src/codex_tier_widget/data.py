@@ -15,7 +15,7 @@ def _http_get_json(url: str) -> dict:
     request = urllib.request.Request(
         url,
         headers={
-            'User-Agent': 'codex-tier-widget/0.3',
+            'User-Agent': 'codex-tier-widget/0.4',
             'Accept': 'application/json',
         },
     )

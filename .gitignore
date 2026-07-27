@@ -108,6 +108,7 @@ Icon
 
 # ── 构建产物 / 打包 ────────────────────────────────────────────────────
 *.spec
+!CodexTierWidget.spec
 *.spec.json
 dist/
 build/

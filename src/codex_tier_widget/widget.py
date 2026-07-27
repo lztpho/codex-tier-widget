@@ -8,8 +8,9 @@ from collections.abc import Callable
 from queue import Empty, Queue
 
 from . import config, data
+from .autostart import AutoStartManager
 from .color import format_iq, format_price, price_color_for, score_for
-from .tray import EXIT, HIDE, REFRESH, SHOW, TrayController
+from .tray import AUTOSTART, EXIT, HIDE, REFRESH, SHOW, TrayController
 
 ROW_HEIGHT = 26
 WINDOW_PADDING = 3
@@ -108,7 +109,13 @@ class TierWidget:
         self._drag_offset_y = 0
         self._closed = False
         self._tray_commands: Queue[str] = Queue()
-        self.tray = TrayController(self._tray_commands.put)
+        self.autostart = AutoStartManager()
+        self.autostart.initialize_default_enabled()
+        self.tray = TrayController(
+            self._tray_commands.put,
+            autostart_checked=self.autostart.is_enabled,
+            autostart_supported=lambda: self.autostart.supported,
+        )
 
         self._configure_window()
         self.rows: list[TierRow] = []
@@ -234,6 +241,9 @@ class TierWidget:
                 self.hide_window()
             elif command == REFRESH:
                 self.refresh_data()
+            elif command == AUTOSTART:
+                self.autostart.toggle()
+                self.tray.refresh_menu()
             elif command == EXIT:
                 self.close()
 

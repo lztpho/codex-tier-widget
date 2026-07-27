@@ -26,7 +26,8 @@
 - IQ 达到 80 的模型进入优先组，再按 `IQ ÷ 费用` 从高到低排序。
 - IQ 未达标或缺少有效数据的模型排在后面。
 - 网络暂时不可用时使用本机缓存。
-- 可按住任意一行拖动窗口，按 Escape 隐藏窗口；右键系统托盘图标可显示、隐藏、刷新或退出。
+- 可按住任意一行拖动窗口，按 Escape 隐藏窗口。
+- 右键系统托盘图标可显示、隐藏、刷新、退出或切换开机自启。
 
 ## 它不会做什么？
 
@@ -39,16 +40,19 @@
 
 ## 快速开始
 
-需要 Windows 10/11 和 Python 3.11 或更新版本。在项目根目录运行：
+普通用户不需要安装 Python：
 
-```powershell
-python scripts/launch_widget.py
-```
+1. 从 [Releases](https://github.com/lztpho/codex-tier-widget/releases/latest) 下载 `CodexTierWidget.exe`；
+2. 将 EXE 放到一个固定目录；
+3. 双击运行。
 
-首次运行前安装依赖：
+首次运行默认开启当前用户的开机自启，不需要管理员权限。右键托盘图标，点击带勾的“开机自启”即可关闭；再次点击可重新开启。
+
+从源码运行仅用于开发：
 
 ```powershell
 python -m pip install -r requirements.txt
+python scripts/launch_widget.py
 ```
 
 启动后窗口会出现在屏幕右下角，右下角通知区域也会出现托盘图标。按 Escape 只隐藏窗口，要完全退出请从托盘菜单选择“退出程序”。
@@ -77,13 +81,14 @@ DISPLAY_LIMIT = 3
 
 ## 数据与隐私
 
-数据来自 [Codex 雷达](https://codexradar.com/) 的公开智力效率数据。程序只会在本机写入 `~/.codex_radar_cache.json` 作为离线缓存，不会访问 `~/.codex/config.toml`。
+数据来自 [Codex 雷达](https://codexradar.com/) 的公开智力效率数据。程序只会写入自己的离线缓存和当前用户的 Windows 自启设置，不会访问 `~/.codex/config.toml`，也不需要管理员权限。
 
 ## 开发与校验
 
 ```powershell
 python tools/dev_check.py all
 python tools/release_check.py
+powershell -ExecutionPolicy Bypass -File scripts/build_windows_exe.ps1
 ```
 
 更多内容：

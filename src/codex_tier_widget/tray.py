@@ -8,14 +8,23 @@ from collections.abc import Callable
 SHOW = 'show'
 HIDE = 'hide'
 REFRESH = 'refresh'
+AUTOSTART = 'autostart'
 EXIT = 'exit'
 
 
 class TrayController:
     """在独立线程运行系统托盘，并把菜单操作交给 Tk 主线程处理。"""
 
-    def __init__(self, command_sink: Callable[[str], None]) -> None:
+    def __init__(
+        self,
+        command_sink: Callable[[str], None],
+        *,
+        autostart_checked: Callable[[], bool],
+        autostart_supported: Callable[[], bool],
+    ) -> None:
         self._command_sink = command_sink
+        self._autostart_checked = autostart_checked
+        self._autostart_supported = autostart_supported
         self._icon = None
         self._thread: threading.Thread | None = None
         self._ready = threading.Event()
@@ -58,6 +67,14 @@ class TrayController:
         if self._thread is not None and self._thread.is_alive():
             self._thread.join(timeout=3.0)
 
+    def refresh_menu(self) -> None:
+        """刷新托盘菜单中的动态勾选状态。"""
+        if self._icon is not None:
+            try:
+                self._icon.update_menu()
+            except (OSError, RuntimeError) as exc:
+                self._error = self._error or exc
+
     def _run(self) -> None:
         try:
             import pystray
@@ -79,6 +96,13 @@ class TrayController:
                     pystray.MenuItem(
                         '立即刷新',
                         lambda _icon, _item: self._send(REFRESH),
+                    ),
+                    pystray.Menu.SEPARATOR,
+                    pystray.MenuItem(
+                        '开机自启',
+                        lambda _icon, _item: self._send(AUTOSTART),
+                        checked=lambda _item: self._autostart_checked(),
+                        enabled=lambda _item: self._autostart_supported(),
                     ),
                     pystray.Menu.SEPARATOR,
                     pystray.MenuItem(
