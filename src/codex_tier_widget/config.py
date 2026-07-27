@@ -7,8 +7,10 @@ from pathlib import Path
 # 每次刷新从全部公开数据中重算，只显示排名前三的档位。
 DISPLAY_LIMIT = 3
 
-# 数据源与刷新策略。
-DATA_URL = 'https://codexradar.com/data/intelligence-efficiency.json'
+# 数据源与刷新策略。主接口与 Codex 雷达网页使用同一份实时任务表；
+# 旧快照只在首次启动且主接口不可用时兜底。
+DATA_URL = 'https://api.codexradar.com/api/v1/table'
+FALLBACK_DATA_URL = 'https://codexradar.com/data/intelligence-efficiency.json'
 DATA_CACHE = Path.home() / '.codex_radar_cache.json'
 REFRESH_SECONDS = 600
 HTTP_TIMEOUT = 5.0

@@ -81,7 +81,7 @@ DISPLAY_LIMIT = 3
 
 ## 数据与隐私
 
-数据来自 [Codex 雷达](https://codexradar.com/) 的公开智力效率数据。程序只会写入自己的离线缓存和当前用户的 Windows 自启设置，不会访问 `~/.codex/config.toml`，也不需要管理员权限。
+数据来自 [Codex 雷达](https://codexradar.com/) 网页使用的公开实时任务表接口。程序按网页相同规则聚合 IQ 与费用，旧公开快照只用于首次运行时的网络降级。程序只会写入自己的离线缓存和当前用户的 Windows 自启设置，不会访问 `~/.codex/config.toml`，也不需要管理员权限。
 
 ## 开发与校验
 
