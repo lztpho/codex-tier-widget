@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import compileall
 import sys
+from importlib import import_module
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -28,10 +29,17 @@ def smoke_import() -> int:
     """确认纯展示组件的模块都能导入。"""
     sys.path.insert(0, str(SRC))
     try:
-        import codex_tier_widget  # noqa: F401
-        from codex_tier_widget import color, config, data  # noqa: F401
-        from codex_tier_widget import widget  # noqa: F401
-    except Exception as exc:
+        for module in (
+            'codex_tier_widget',
+            'codex_tier_widget.autostart',
+            'codex_tier_widget.color',
+            'codex_tier_widget.config',
+            'codex_tier_widget.data',
+            'codex_tier_widget.tray',
+            'codex_tier_widget.widget',
+        ):
+            import_module(module)
+    except (ImportError, OSError, RuntimeError) as exc:
         print(f'导入检查失败：{exc}')
         return 1
     print('导入检查通过')

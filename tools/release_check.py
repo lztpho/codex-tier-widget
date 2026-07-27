@@ -20,7 +20,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PYPROJECT = ROOT / 'pyproject.toml'
-INIT      = ROOT / 'src' / 'codex_tier_widget' / '__init__.py'
+INIT = ROOT / 'src' / 'codex_tier_widget' / '__init__.py'
 CHANGELOG = ROOT / 'CHANGELOG.md'
 
 
@@ -51,7 +51,7 @@ def check_changelog_has_unreleased() -> int:
     text = CHANGELOG.read_text(encoding='utf-8')
     if '## [Unreleased]' not in text:
         # 找到第一个 ## 段
-        m = re.search(r'^##\s+\[', text, re.M)
+        m = re.search(r'^##\s+\[', text, re.MULTILINE)
         first = m.group(0) if m else '无'
         print(f'✗ 缺 [Unreleased] 段；当前首段是：{first}')
         return 1
@@ -62,18 +62,20 @@ def check_changelog_has_unreleased() -> int:
 def check_no_secrets() -> int:
     """代码里不应该有 token / api key / 私钥 等敏感字符串。"""
     sensitive_patterns = [
-        (r'sk-[A-Za-z0-9]{20,}',      'OpenAI API key'),
-        (r'ghp_[A-Za-z0-9]{20,}',      'GitHub PAT'),
+        (r'sk-[A-Za-z0-9]{20,}', 'OpenAI API key'),
+        (r'ghp_[A-Za-z0-9]{20,}', 'GitHub PAT'),
         (r'-----BEGIN (RSA |EC )?PRIVATE KEY-----', 'private key'),
     ]
     rc = 0
     files_to_check = list((ROOT / 'src').rglob('*.py')) + [
-        PYPROJECT, ROOT / 'README.md', CHANGELOG,
+        PYPROJECT,
+        ROOT / 'README.md',
+        CHANGELOG,
     ]
     for f in files_to_check:
         try:
             text = f.read_text(encoding='utf-8')
-        except Exception:
+        except (OSError, UnicodeError):
             continue
         for pattern, label in sensitive_patterns:
             if re.search(pattern, text):

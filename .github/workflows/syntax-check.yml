@@ -42,6 +42,7 @@ jobs:
           # Just import modules to catch import-time errors.
           sys.path.insert(0, 'src')
           import codex_tier_widget
+          import codex_tier_widget.autostart
           import codex_tier_widget.config
           import codex_tier_widget.color
           import codex_tier_widget.data
