@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-__version__ = '0.4.0'
+__version__ = '0.4.1'
 __author__ = 'codering_widget contributors'
 __license__ = 'MIT'
 

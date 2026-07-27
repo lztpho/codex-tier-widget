@@ -62,10 +62,52 @@ def smoke_color() -> int:
     return 0
 
 
+def smoke_data() -> int:
+    """验证实时任务表会按网页规则聚合 IQ 与费用。"""
+    sys.path.insert(0, str(SRC))
+    from codex_tier_widget.data import aggregate_table
+
+    snapshot = aggregate_table(
+        {
+            'combos': [{'model': 'gpt-test', 'effort': 'high'}],
+            'tasks': [{'id': 'task-1'}, {'id': 'task-2'}],
+            'cells': {
+                'task-1|gpt-test|high': {
+                    'ran_by': [
+                        {
+                            'passed': True,
+                            'actual_cost_usd': 2.0,
+                            'duration_sec': 600,
+                            'graded_at': '2026-07-27T00:00:00+00:00',
+                        }
+                    ]
+                },
+                'task-2|gpt-test|high': {
+                    'ran_by': [
+                        {
+                            'passed': False,
+                            'actual_cost_usd': 4.0,
+                            'duration_sec': 1200,
+                            'graded_at': '2026-07-27T01:00:00+00:00',
+                        }
+                    ]
+                },
+            },
+        }
+    )
+    point = snapshot['points'][0]
+    assert point['iq'] == 75.0
+    assert point['average_price_usd'] == 3.0
+    assert point['average_minutes'] == 15.0
+    assert snapshot['source_updated_at'] == '2026-07-27T01:00:00+00:00'
+    print('实时数据聚合检查通过')
+    return 0
+
+
 COMMANDS = {
     'syntax': syntax_check,
-    'smoke': lambda: smoke_import() + smoke_color(),
-    'all': lambda: syntax_check() + smoke_import() + smoke_color(),
+    'smoke': lambda: smoke_import() + smoke_color() + smoke_data(),
+    'all': lambda: syntax_check() + smoke_import() + smoke_color() + smoke_data(),
 }
 
 
