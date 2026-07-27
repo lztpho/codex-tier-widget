@@ -54,10 +54,28 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $Tag = '${{ github.ref_name }}'
+          $Version = $Tag -replace '^v', ''
+          $Changelog = Get-Content 'CHANGELOG.md' -Raw -Encoding utf8
+          $EscapedVersion = [regex]::Escape($Version)
+          $Pattern = "(?ms)^## \[$EscapedVersion\][^\r\n]*\r?\n(?<notes>.*?)(?=^## \[|\z)"
+          $Section = [regex]::Match($Changelog, $Pattern)
+          if (-not $Section.Success) {
+            throw "CHANGELOG.md 中缺少 $Tag 对应的版本章节"
+          }
+
+          $Notes = "## $Tag`r`n`r`n" + $Section.Groups['notes'].Value.Trim()
+          $NotesPath = Join-Path $env:RUNNER_TEMP 'release-notes.md'
+          [IO.File]::WriteAllText(
+            $NotesPath,
+            $Notes,
+            [Text.UTF8Encoding]::new($false)
+          )
+
           gh release view $Tag *> $null
           if ($LASTEXITCODE -eq 0) {
+            gh release edit $Tag --title "Codex Tier Widget $Tag" --notes-file $NotesPath
             gh release upload $Tag 'dist\CodexTierWidget.exe' 'dist\CodexTierWidget.sha256' --clobber
           }
           else {
-            gh release create $Tag 'dist\CodexTierWidget.exe' 'dist\CodexTierWidget.sha256' --title "Codex Tier Widget $Tag" --generate-notes
+            gh release create $Tag 'dist\CodexTierWidget.exe' 'dist\CodexTierWidget.sha256' --title "Codex Tier Widget $Tag" --notes-file $NotesPath
           }
